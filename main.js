@@ -1,4 +1,3 @@
-
 let fullBeerList = [];
 displayBeer()
 
@@ -8,16 +7,18 @@ function displayBeer() {
     const url = `https://api.punkapi.com/v2/beers`;
 
     // Abrufen der Daten von der API mit fetch
-        // ToDo
+    fetch(url)
+        .then(response => response.json())
+        .then((beer) => {
+            // Speichern der vollständigen Liste der Biere in das vorgegebene Array
+        fullBeerList = beer;
 
-    // Speichern der vollständigen Liste der Biere in das vorgegebene Array
-        // ToDo
-
-    // Generieren des HTML-Codes für jedes Bier und Zusammenfügen in eine einzige Zeichenkette => Hilfestellung: data.map(generateBeerHtml).join('')
-        // ToDo
-
-    // Fügen des HTML-Codes zur beerContainer-Div-Box hinzu
-        // ToDo
+        // Generieren des HTML-Codes für jedes Bier und Zusammenfügen in eine einzige Zeichenkette => Hilfestellung: data.map(generateBeerHtml).join('')
+            const beerHtml = beer.map(generateBeerHtml).join('');
+    
+        // Fügen des HTML-Codes zur beerContainer-Div-Box hinzu
+            document.getElementById('beerContainer').innerHTML = beerHtml;
+        });
 }
 
 /* Diese Funktion generiert den HTML-Code für ein einzelnes Bier
@@ -31,15 +32,15 @@ function displayBeer() {
 const generateBeerHtml = beer => `
   <section class="col">
     <div class="card">
-        <img src="<!--ToDo-->" class="card-img-top">
+        <img src="${beer.image_url}" class="card-img-top">
         <div class="card-body">
-            <h5 class="card-title"><!--ToDo--></h5>
+            <h5 class="card-title">${beer.name}</h5>
             <div class="card-text">
-                <p><!--ToDo--></p>
+                <p>${beer.tagline}</p>
             </div>
         </div>
         <div class="card-footer">
-          <a class="btn btn-dark btn-sm details-link" data-beer-id="<!--ToDo-->">weitere Details</a>
+          <a class="btn btn-dark btn-sm details-link" data-beer-id="${beer.id}">weitere Details</a>
         </div>
     </div>
   </section>
@@ -47,6 +48,11 @@ const generateBeerHtml = beer => `
 
 // Event-Listener für Details-Links
 document.addEventListener('click', event => {
+    if(event.target.matches('.details-link')) {
+        event.preventDefault();
+        const beerID = event.target.getAttribute('data-beer-id');
+        getBeerDetails(beerID);
+    }
     // Überprüfen, ob das geklickte Element ein Details-Link ist
     // ToDo
 
@@ -60,7 +66,10 @@ document.addEventListener('click', event => {
 function getBeerDetails(beerID) {
     /* Speichern Sie das Objekt aus der fullBeerList an der Stelle der ID die als Übergabeparameter
        übergeben wird in die const beer die Sie hier definieren */
-    // ToDo
+    const beer = fullBeerList[beerID-1];
+    
+
+    
 
     /* Das HTML-Code für das Modal-Fenster mit den Details des Biers
        Fügen Sie die korrekten Daten mit ${beer.bsp} aus dem Objekt ein überall wo <!-- ToDo: ... --> steht */
@@ -69,24 +78,24 @@ function getBeerDetails(beerID) {
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel"><!--ToDo: Name--></h1>
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">${beer.name}</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row row-cols-2 g-4">
                             <div>
-                                <img src="<!--ToDo: Image-->" class="img-fluid mb-3">
+                                <img src="${beer.image_url}" class="img-fluid mb-3">
                                 <div class="d-flex justify-content-center">
                                     <div class="px-2">
                                         <p><b>ingredients: malt</b></p>
                                         <ul>
-                                           <!-- ToDo: malt name => Hinweis map! Ausgabe in <li> nicht vergessen -->
+                                          ${beer.ingredients.malt.map(malt => `<li>${malt.name}</li>`).join('')}
                                         </ul>
                                     </div>
                                     <div class="px-2">
                                         <p><b>ingredients: hops</b></p>
                                         <ul>
-                                           <!-- ToDo: hops name => Hinweis map! Ausgabe in <li> nicht vergessen -->
+                                         ${beer.ingredients.hops.map(hops => `<li>${hops.name}</li>`).join('')}
                                         </ul>
                                     </div>
                                 </div>
@@ -102,39 +111,40 @@ function getBeerDetails(beerID) {
                                     <tbody>
                                     <tr>
                                         <td>first brewed</td>
-                                        <td><!--ToDo: first brew--></td>
+                                        <td>${beer.first_brewed}</td>
                                     </tr>
                                     <tr>
                                         <td>Volumne</td>
-                                        <td><!--ToDo: Volumne Value--> <!--ToDo: Unit--></td>
+                                        <td>${beer.volume.value} ${beer.volume.unit}</td>
                                     </tr>
                                     <tr>
                                         <td>boil volume</td>
-                                        <td><!--ToDo: Boil Value--> <!--ToDo: Boil Unit--></td>
+                                        <td>${beer.boil_volume.value} ${beer.boil_volume.unit}</td>
                                     </tr>
         
                                     <tr>
                                         <td>methods</td>
-                                        <td><!--ToDo: Methods Mash Temp value--> <!--ToDo: Methods Mash Temp Unit--></td>
+                                        <td>${beer.method.mash_temp[0].temp.value} ${beer.method.mash_temp[0].temp.unit}</td>
                                     </tr>
                                     <tr>
                                         <td>fermentation</td>
-                                        <td><!--ToDo: Methods fermentation Temp value--> <!--ToDo: Methods fermentation Temp Unit--></td>
+                                        <td>${beer.method.fermentation.temp.value} ${beer.method.fermentation.temp.unit}</td>
                                     </tr>
                                     </tbody>
                                 </table>
                                 <p><b>Food Pairing</b></p>
                                 <ul>
+                                    ${beer.food_pairing.map(food => `<li>${food}</li>`).join('')};
                                     <!--ToDo: food pairing => Hinweis map! Ausgabe in <li> nicht vergessen-->
                                 </ul>
                             </div>
                         </div>
                         <p>
-                        <!--ToDo: brewers tip-->
+                        ${beer.brewers_tips}
                         </p>
                     </div>
                     <div class="modal-footer">
-                        <p><small><!--ToDo: contributed by--></small></p>
+                        <p><small>${beer.contributed_by}</small></p>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
